@@ -91,11 +91,11 @@ type GetMetersResponse struct {
 	Lines                                interface{} `json:"Lines"`
 	IsConsumptionAvailable               bool        `json:"IsConsumptionAvailable"`
 	AlertsValues                         interface{} `json:"AlertsValues"`
-	TargetUsage                          int         `json:"TargetUsage"`
-	AverageUsage                         int         `json:"AverageUsage"`
-	ActualUsage                          int         `json:"ActualUsage"`
+	TargetUsage                          float64     `json:"TargetUsage"`
+	AverageUsage                         float64     `json:"AverageUsage"`
+	ActualUsage                          float64     `json:"ActualUsage"`
 	MyUsage                              interface{} `json:"MyUsage"`
-	AverageUsagePerPerson                int         `json:"AverageUsagePerPerson"`
+	AverageUsagePerPerson                float64     `json:"AverageUsagePerPerson"`
 }
 
 func (c *Client) GetMeters(ctx context.Context) (*GetMetersResponse, error) {
