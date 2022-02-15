@@ -21,4 +21,4 @@ COPY --from=0 /workspace/thames-water-importer /usr/bin
 
 USER blessuser
 
-ENTRYPOINT ["thames-water-importer"]
+ENTRYPOINT ["thames-water-importer","--chrome-sandbox=false"]
