@@ -72,7 +72,7 @@ func main() {
 			&cli.DurationFlag{
 				Name:  "thames-water-login-timeout",
 				Usage: "Configure the TSDB block length. Only change if you know what you are doing.",
-				Value: 10 * time.Second,
+				Value: 30 * time.Second,
 			},
 			&cli.StringFlag{
 				Name:        "thames-water-password",
