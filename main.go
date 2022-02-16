@@ -29,6 +29,10 @@ func main() {
 		Usage: "Export Thames Water Smartmeter consumption data and ingest into Thanos",
 		Action: func(c *cli.Context) error {
 
+			if !c.Bool("verbose") {
+				logger = level.NewFilter(logger, level.AllowInfo())
+			}
+
 			var externalLabels []string
 			for _, lbl := range c.StringSlice("external-labels") {
 				parts := strings.Split(lbl, "=")
@@ -54,6 +58,11 @@ func main() {
 			return a.Run(ctx)
 		},
 		Flags: []cli.Flag{
+			&cli.BoolFlag{
+				Name:    "verbose",
+				Aliases: []string{"v"},
+				Usage:   "Enable debug logging",
+			},
 			&cli.StringFlag{
 				Name:     "thames-water-email",
 				Usage:    "Thames Water online account email address.",
