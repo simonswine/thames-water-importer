@@ -413,6 +413,13 @@ func loginThamesWater(email, password string, accountNumber, accountAddress *str
 		// open url
 		chromedp.Navigate(loginURL),
 
+		// accept cookie
+		chromedp.WaitVisible(`button#onetrust-accept-btn-handler`),
+		chromedp.Sleep(1 * time.Second), // wait for animation to finish
+
+		chromedp.Click(`button#onetrust-accept-btn-handler`),
+		chromedp.WaitNotVisible(`button#onetrust-accept-btn-handler`),
+
 		// enter email
 		chromedp.WaitReady(`button#btnNext`),
 		chromedp.SendKeys(`//input[@type="email" and @name="email"]`, email),
