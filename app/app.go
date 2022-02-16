@@ -30,6 +30,24 @@ const (
 	loginURL = "https://myaccount.thameswater.co.uk/login"
 )
 
+type logLevelOverride struct {
+	next  log.Logger
+	level interface{}
+}
+
+func (l *logLevelOverride) Log(keyvals ...interface{}) error {
+	for i := 0; i < len(keyvals); i += 2 {
+		if n, ok := keyvals[0].(string); ok && n == "level" {
+			keyvals[i+1] = l.level
+			return l.next.Log(keyvals...)
+		}
+	}
+	kvs := make([]interface{}, len(keyvals)+2)
+	kvs[0], kvs[1] = level.Key(), l.level
+	copy(kvs[2:], keyvals)
+	return l.next.Log(kvs...)
+}
+
 type config struct {
 	thamesWaterEmail        string
 	thamesWaterPassword     string
@@ -256,7 +274,7 @@ func (a *App) importConsumptionIntoLocalTSDB(ctx context.Context) error {
 	options.MinBlockDuration = a.cfg.tsdbBlockDuration.Milliseconds()
 	options.MaxBlockDuration = a.cfg.tsdbBlockDuration.Milliseconds()
 
-	db, err := tsdb.Open(a.cfg.tsdbPath, level.Debug(a.logger), a.reg, options, nil)
+	db, err := tsdb.Open(a.cfg.tsdbPath, &logLevelOverride{next: a.logger, level: level.DebugValue()}, a.reg, options, nil)
 	if err != nil {
 		return err
 	}
