@@ -438,16 +438,13 @@ func loginThamesWater(logger log.Logger, email, password string, accountNumber, 
 		chromedp.ActionFunc(func(context.Context) error {
 			return level.Debug(logger).Log("msg", "enter email", "email", email)
 		}),
-		chromedp.WaitReady(`button#btnNext`),
-		chromedp.SendKeys(`//input[@type="email" and @name="email"]`, email),
-		chromedp.Click(`button#btnNext`, chromedp.NodeVisible),
+		chromedp.SendKeys(`//input[@type="email" and @id="email"]`, email),
 
 		// enter password
 		chromedp.ActionFunc(func(context.Context) error {
 			return level.Debug(logger).Log("msg", "enter password", "password", strings.Repeat("*", len(password)))
 		}),
-		chromedp.WaitVisible(`//input[@type="password" and @name="Password"]`),
-		chromedp.SendKeys(`//input[@type="password" and @name="Password"]`, password),
+		chromedp.SendKeys(`//input[@type="password" and @id="password"]`, password),
 		chromedp.Click(`button#next`, chromedp.NodeVisible),
 
 		// wait for account details to be shown (otherwise cookie is not authorized)
