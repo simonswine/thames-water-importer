@@ -10,6 +10,7 @@ import (
 	"time"
 
 	retry "github.com/avast/retry-go/v4"
+	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/chromedp"
 	"github.com/go-kit/log"
@@ -218,7 +219,7 @@ func (a *App) getLoginCookies(ctx context.Context) ([]*http.Cookie, error) {
 	// login to thames water
 	_ = level.Info(a.logger).Log("msg", "attempting login to thames water account", "email", a.cfg.thamesWaterEmail)
 	if err := chromedp.Run(chromeCtx,
-		loginThamesWater(a.cfg.thamesWaterEmail, a.cfg.thamesWaterPassword, &accountNumber, &accountAddress),
+		loginThamesWater(a.logger, a.cfg.thamesWaterEmail, a.cfg.thamesWaterPassword, &accountNumber, &accountAddress),
 		chromedp.ActionFunc(func(ctx context.Context) error {
 			cookies, err := network.GetAllCookies().Do(ctx)
 			if err != nil {
@@ -408,12 +409,25 @@ func (a *App) importConsumptionIntoLocalTSDB(ctx context.Context) error {
 	return nil
 }
 
-func loginThamesWater(email, password string, accountNumber, accountAddress *string) chromedp.Tasks {
+func loginThamesWater(logger log.Logger, email, password string, accountNumber, accountAddress *string) chromedp.Tasks {
 	return chromedp.Tasks{
 		// open url
 		chromedp.Navigate(loginURL),
 
+		chromedp.ActionFunc(func(ctx context.Context) error {
+			// force viewport emulation
+			return emulation.SetDeviceMetricsOverride(1280, 1024, 1, false).
+				WithScreenOrientation(&emulation.ScreenOrientation{
+					Type:  emulation.OrientationTypePortraitPrimary,
+					Angle: 0,
+				}).
+				Do(ctx)
+		}),
+
 		// accept cookie
+		chromedp.ActionFunc(func(context.Context) error {
+			return level.Debug(logger).Log("msg", "waiting for cookie consent", "url", loginURL)
+		}),
 		chromedp.WaitVisible(`button#onetrust-accept-btn-handler`),
 		chromedp.Sleep(1 * time.Second), // wait for animation to finish
 
@@ -421,16 +435,25 @@ func loginThamesWater(email, password string, accountNumber, accountAddress *str
 		chromedp.WaitNotVisible(`button#onetrust-accept-btn-handler`),
 
 		// enter email
+		chromedp.ActionFunc(func(context.Context) error {
+			return level.Debug(logger).Log("msg", "enter email", "email", email)
+		}),
 		chromedp.WaitReady(`button#btnNext`),
 		chromedp.SendKeys(`//input[@type="email" and @name="email"]`, email),
 		chromedp.Click(`button#btnNext`, chromedp.NodeVisible),
 
 		// enter password
+		chromedp.ActionFunc(func(context.Context) error {
+			return level.Debug(logger).Log("msg", "enter password", "password", strings.Repeat("*", len(password)))
+		}),
 		chromedp.WaitVisible(`//input[@type="password" and @name="Password"]`),
 		chromedp.SendKeys(`//input[@type="password" and @name="Password"]`, password),
 		chromedp.Click(`button#next`, chromedp.NodeVisible),
 
 		// wait for account details to be shown (otherwise cookie is not authorized)
+		chromedp.ActionFunc(func(context.Context) error {
+			return level.Debug(logger).Log("msg", "wait for account details to be shown")
+		}),
 		chromedp.WaitReady(`div.details-panel`),
 
 		// extract account number / address
