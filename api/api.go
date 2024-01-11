@@ -4,9 +4,11 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"strings"
 	"time"
 
 	"golang.org/x/net/publicsuffix"
@@ -153,24 +155,32 @@ func (c *Client) GetSmartWaterMeterConsumptions(ctx context.Context, req GetSmar
 
 	values := u.Query()
 	values.Set("meter", req.Meter)
-	values.Set("startDate", fmt.Sprintf("%d", req.StartDate.Day()))
-	values.Set("startMonth", fmt.Sprintf("%d", req.StartDate.Month()))
+	values.Set("startDate", fmt.Sprintf("%02d", req.StartDate.Day()))
+	values.Set("startMonth", fmt.Sprintf("%02d", req.StartDate.Month()))
 	values.Set("startYear", fmt.Sprintf("%d", req.StartDate.Year()))
-	values.Set("endDate", fmt.Sprintf("%d", req.EndDate.Day()))
-	values.Set("endMonth", fmt.Sprintf("%d", req.EndDate.Month()))
+	values.Set("endDate", fmt.Sprintf("%02d", req.EndDate.Day()))
+	values.Set("endMonth", fmt.Sprintf("%02d", req.EndDate.Month()))
 	values.Set("endYear", fmt.Sprintf("%d", req.EndDate.Year()))
 	values.Set("granularity", "H")
 	values.Set("premiseId", "")
+	values.Set("isForC4C", "false")
 	u.RawQuery = values.Encode()
 
 	resp, err := c.httpClient.Get(u.String())
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		io.Copy(io.Discard, resp.Body)
+		resp.Body.Close()
+	}()
 
 	if resp.StatusCode/100 != 2 {
 		return nil, fmt.Errorf("unexpected status code %d", resp.StatusCode)
+	}
+
+	if !strings.Contains(resp.Header.Get("content-type"), "application/json") {
+		return nil, fmt.Errorf("unexpected content type %s, expected application/json", resp.Header.Get("content-type"))
 	}
 
 	var readings GetSmartWaterMeterConsumptionsResponse
