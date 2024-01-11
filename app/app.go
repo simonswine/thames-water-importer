@@ -434,7 +434,7 @@ func loginThamesWater(logger log.Logger, email, password string, accountNumber, 
 			return level.Debug(logger).Log("msg", "waiting for cookie consent", "url", loginURL)
 		}),
 		chromedp.WaitVisible(`button#onetrust-accept-btn-handler`),
-		chromedp.Sleep(1 * time.Second), // wait for animation to finish
+		chromedp.Sleep(2 * time.Second), // wait for animation to finish
 
 		chromedp.Click(`button#onetrust-accept-btn-handler`),
 		chromedp.WaitNotVisible(`button#onetrust-accept-btn-handler`),
