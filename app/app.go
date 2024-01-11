@@ -406,6 +406,11 @@ func (a *App) importConsumptionIntoLocalTSDB(ctx context.Context) error {
 		}
 	}
 
+	if err := db.Compact(); err != nil {
+		return fmt.Errorf("error during compaction: %w", err)
+	}
+	_ = level.Debug(a.logger).Log("msg", "ran TSDB compaction")
+
 	return nil
 }
 
