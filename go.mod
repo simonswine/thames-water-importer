@@ -4,8 +4,8 @@ go 1.17
 
 require (
 	github.com/avast/retry-go/v4 v4.0.2
-	github.com/chromedp/cdproto v0.0.0-20211126220118-81fa0469ad77
-	github.com/chromedp/chromedp v0.7.6
+	github.com/chromedp/cdproto v0.0.0-20241003230502-a4a8f7c660df
+	github.com/chromedp/chromedp v0.11.0
 	github.com/go-kit/log v0.2.0
 	github.com/grafana/dskit v0.0.0-20211229145507-fded26153e7b
 	github.com/prometheus/client_golang v1.11.0
@@ -43,7 +43,7 @@ require (
 	github.com/go-logfmt/logfmt v0.5.1 // indirect
 	github.com/gobwas/httphead v0.1.0 // indirect
 	github.com/gobwas/pool v0.2.1 // indirect
-	github.com/gobwas/ws v1.1.0 // indirect
+	github.com/gobwas/ws v1.4.0 // indirect
 	github.com/golang-jwt/jwt/v4 v4.0.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -88,7 +88,7 @@ require (
 	golang.org/x/crypto v0.0.0-20211215165025-cf75a172585e // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
-	golang.org/x/sys v0.0.0-20211124211545-fe61309f8881 // indirect
+	golang.org/x/sys v0.26.0 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect

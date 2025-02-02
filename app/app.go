@@ -12,6 +12,7 @@ import (
 	retry "github.com/avast/retry-go/v4"
 	"github.com/chromedp/cdproto/emulation"
 	"github.com/chromedp/cdproto/network"
+	"github.com/chromedp/cdproto/storage"
 	"github.com/chromedp/chromedp"
 	"github.com/go-kit/log"
 	"github.com/go-kit/log/level"
@@ -221,13 +222,14 @@ func (a *App) getLoginCookies(ctx context.Context) ([]*http.Cookie, error) {
 	if err := chromedp.Run(chromeCtx,
 		loginThamesWater(a.logger, a.cfg.thamesWaterEmail, a.cfg.thamesWaterPassword, &accountNumber, &accountAddress),
 		chromedp.ActionFunc(func(ctx context.Context) error {
-			cookies, err := network.GetAllCookies().Do(ctx)
+			cookies, err := storage.GetCookies().Do(ctx)
 			if err != nil {
 				return err
 			}
 
 			for _, cookie := range cookies {
-				if strings.HasSuffix(cookie.Domain, ".thameswater.co.uk") && (cookie.Name == "JSESSIONID" || cookie.Name == "da_sid" || cookie.Name == "da_lid" || cookie.Name == "ARRAffinity" || cookie.Name == "ARRAffinitySameSite") {
+
+				if strings.HasSuffix(cookie.Domain, ".thameswater.co.uk") {
 					twCookies = append(twCookies, &http.Cookie{
 						Name:  cookie.Name,
 						Value: cookie.Value,
@@ -415,6 +417,7 @@ func (a *App) importConsumptionIntoLocalTSDB(ctx context.Context) error {
 }
 
 func loginThamesWater(logger log.Logger, email, password string, accountNumber, accountAddress *string) chromedp.Tasks {
+	var accountInfo string
 	return chromedp.Tasks{
 		// open url
 		chromedp.Navigate(loginURL),
@@ -456,11 +459,19 @@ func loginThamesWater(logger log.Logger, email, password string, accountNumber, 
 		chromedp.ActionFunc(func(context.Context) error {
 			return level.Debug(logger).Log("msg", "wait for account details to be shown")
 		}),
-		chromedp.WaitReady(`div.details-panel`),
+		chromedp.WaitReady(`div#billing-ui-root`),
+		chromedp.Text(`div[class^='WelcomeBanner_account-information']`, &accountInfo),
+		chromedp.ActionFunc(func(context.Context) error {
+			if accountInfo != "" {
+				parts := strings.Split(accountInfo, "|")
+				if len(parts) == 2 {
+					*accountNumber = strings.TrimPrefix(strings.TrimSpace(parts[0]), "Account number: ")
+					*accountAddress = strings.TrimSpace(parts[1])
+				}
+			}
 
-		// extract account number / address
-		chromedp.Text(`div.details-panel span.detail-value.txt-actnumber`, accountNumber),
-		chromedp.Text(`div.details-panel span.detail-value.txt-adr`, accountAddress),
+			return nil
+		}),
 	}
 }
 
