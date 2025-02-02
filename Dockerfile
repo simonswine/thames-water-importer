@@ -1,4 +1,4 @@
-FROM golang:1.21.6
+FROM golang:1.23.5
 
 WORKDIR /workspace
 
@@ -13,7 +13,7 @@ COPY ./app ./app
 
 RUN CGO_ENABLED=0 GOOS=linux go build -o thames-water-importer ./
 
-FROM browserless/chrome:1.60.1-chrome-stable
+FROM ghcr.io/browserless/chromium:v2.24.3
 
 WORKDIR /tmp
 
